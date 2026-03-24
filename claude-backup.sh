@@ -15,7 +15,7 @@ CLAUDE_BACKUP_SOURCE="${CLAUDE_BACKUP_SOURCE:-$HOME/.claude}"
 CLAUDE_BACKUP_DIR="${CLAUDE_BACKUP_DIR:-$HOME/.claude-backups}"
 CLAUDE_BACKUP_INTERVAL="${CLAUDE_BACKUP_INTERVAL:-300}"
 CLAUDE_BACKUP_SNAPSHOT_INTERVAL="${CLAUDE_BACKUP_SNAPSHOT_INTERVAL:-3600}"
-CLAUDE_BACKUP_MAX_SNAPSHOTS="${CLAUDE_BACKUP_MAX_SNAPSHOTS:-48}"
+CLAUDE_BACKUP_MAX_SNAPSHOTS="${CLAUDE_BACKUP_MAX_SNAPSHOTS:-168}"
 
 # ─── Input validation ────────────────────────────────────────────────────────
 validate_positive_int() {
@@ -621,7 +621,7 @@ Environment variables:
   CLAUDE_BACKUP_DIR                 Backup directory (default: ~/.claude-backups)
   CLAUDE_BACKUP_INTERVAL            Sync interval in seconds (default: 300)
   CLAUDE_BACKUP_SNAPSHOT_INTERVAL   Snapshot interval in seconds (default: 3600)
-  CLAUDE_BACKUP_MAX_SNAPSHOTS       Max snapshots to keep (default: 48)
+  CLAUDE_BACKUP_MAX_SNAPSHOTS       Max snapshots to keep (default: 168)
 EOF
 }
 

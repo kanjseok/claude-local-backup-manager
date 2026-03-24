@@ -24,7 +24,7 @@ A cross-platform background script that automatically backs up the `~/.claude` d
 ### Two-Stage Backup
 
 1. **Mirror Synchronization (every 5 mins)**: Incremental copy `~/.claude` → `~/.claude-backups/current/`
-2. **Snapshots (every 1 hour)**: Create a tar.gz archive of the mirror, retaining the last 48 snapshots.
+2. **Snapshots (every 1 hour)**: Create a tar.gz archive of the mirror, retaining the last 168 snapshots.
 
 ### Sync Engine (Auto-detected)
 
@@ -73,7 +73,7 @@ A cross-platform background script that automatically backs up the `~/.claude` d
 | `CLAUDE_BACKUP_DIR` | `~/.claude-backups` | Backup storage destination |
 | `CLAUDE_BACKUP_INTERVAL` | `300` | Sync interval (seconds) |
 | `CLAUDE_BACKUP_SNAPSHOT_INTERVAL` | `3600` | Snapshot interval (seconds) |
-| `CLAUDE_BACKUP_MAX_SNAPSHOTS` | `48` | Maximum number of snapshots to retain |
+| `CLAUDE_BACKUP_MAX_SNAPSHOTS` | `168` | Maximum number of snapshots to retain |
 
 ### Example: 1-minute interval, custom backup path
 
