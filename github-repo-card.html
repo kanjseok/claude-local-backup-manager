@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Repo Card - claude-local-backup-manager</title>
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+        }
+
+        .controls {
+            margin-bottom: 24px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            background-color: #24292f;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background-color: #000000;
+        }
+
+        button.guide-btn {
+            background-color: #cf222e;
+        }
+
+        button.guide-btn:hover {
+            background-color: #a40e26;
+        }
+
+        .info {
+            font-size: 14px;
+            color: #57606a;
+        }
+
+        /* GitHub Repo Card 공식 규격: 1280 x 640 */
+        .card-container {
+            width: 1280px;
+            height: 640px;
+            background-color: #0d1117;
+            /* GitHub Dark 테마 배경 */
+            position: relative;
+            box-sizing: border-box;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            border: 1px solid #30363d;
+        }
+
+        /* 40pt (약 54px) 가이드 라인 */
+        .guide {
+            position: absolute;
+            background-color: rgba(255, 71, 87, 0.8);
+            z-index: 100;
+            display: none;
+            pointer-events: none;
+        }
+
+        .guide-h-top {
+            top: 54px;
+            left: 0;
+            right: 0;
+            height: 2px;
+        }
+
+        .guide-h-bottom {
+            bottom: 54px;
+            left: 0;
+            right: 0;
+            height: 2px;
+        }
+
+        .guide-v-left {
+            top: 0;
+            bottom: 0;
+            left: 54px;
+            width: 2px;
+        }
+
+        .guide-v-right {
+            top: 0;
+            bottom: 0;
+            right: 54px;
+            width: 2px;
+        }
+
+        body.show-guide .guide {
+            display: block;
+        }
+
+        /* 장식용 그래픽 효과 */
+        .glow-1 {
+            position: absolute;
+            top: -200px;
+            right: -100px;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(163, 113, 247, 0.15) 0%, rgba(13, 17, 23, 0) 60%);
+            border-radius: 50%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .glow-2 {
+            position: absolute;
+            bottom: -300px;
+            left: -100px;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(88, 166, 255, 0.1) 0%, rgba(13, 17, 23, 0) 60%);
+            border-radius: 50%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* 내부 콘텐츠 래퍼 */
+        .content {
+            position: absolute;
+            top: 54px;
+            left: 54px;
+            right: 54px;
+            bottom: 54px;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 46px;
+        }
+
+        /* 레포지토리 정보 */
+        .repo-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 14px;
+        }
+
+        .repo-info svg {
+            width: 44px;
+            height: 44px;
+            fill: #8b949e;
+        }
+
+        .repo-path {
+            font-size: 32px;
+            font-weight: 500;
+            color: #8b949e;
+        }
+
+        .repo-path strong {
+            color: #c9d1d9;
+            font-weight: 700;
+        }
+
+        /* 메인 타이틀 (공간 확보를 위해 84px -> 80px, 여백 미세 조정) */
+        .title {
+            font-size: 80px;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.1;
+            margin: 0 0 16px 0;
+            letter-spacing: -1.5px;
+        }
+
+        .title span {
+            background: linear-gradient(90deg, #a371f7, #58a6ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 설명 텍스트 (공간 확보를 위해 34px -> 32px 조정, 마진 축소) */
+        .description {
+            font-size: 32px;
+            font-weight: 500;
+            color: #8b949e;
+            line-height: 1.5;
+            margin: 0 0 20px 0;
+            letter-spacing: -0.5px;
+        }
+
+        .description strong {
+            color: #c9d1d9;
+        }
+
+        /* 하단 배지 */
+        .badges {
+            display: flex;
+            grid-template-columns: max-content max-content;
+            /* 텍스트 너비에 맞춰 2열 구성 */
+            gap: 16px;
+            margin-top: 0;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            /* 여백 축소 */
+            background-color: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 100px;
+            font-size: 24px;
+            /* 폰트 24px -> 22px 축소 */
+            font-weight: 600;
+            color: #c9d1d9;
+            white-space: nowrap;
+            /* 어떤 상황에서도 텍스트 줄바꿈 원천 차단 */
+        }
+
+        .badge.highlight {
+            background-color: rgba(163, 113, 247, 0.1);
+            border-color: rgba(163, 113, 247, 0.4);
+            color: #a371f7;
+        }
+
+        .badge.highlight-blue {
+            background-color: rgba(88, 166, 255, 0.1);
+            border-color: rgba(88, 166, 255, 0.4);
+            color: #58a6ff;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="controls">
+        <button class="guide-btn" onclick="document.body.classList.toggle('show-guide')">📐 40pt 가이드라인 켜기/끄기</button>
+        <span class="info">💡 가이드라인을 끈 상태에서 중앙의 카드를 캡처(1280x640)하여 사용하세요.</span>
+    </div>
+
+    <div class="card-container" id="capture-area">
+        <div class="guide guide-h-top"></div>
+        <div class="guide guide-h-bottom"></div>
+        <div class="guide guide-v-left"></div>
+        <div class="guide guide-v-right"></div>
+
+        <div class="glow-1"></div>
+        <div class="glow-2"></div>
+
+        <div class="content">
+            <div class="repo-info">
+                <svg viewBox="0 0 24 24">
+                    <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z">
+                    </path>
+                </svg>
+                <div class="repo-path">kanjseok / <strong>claude-local-backup-manager</strong></div>
+            </div>
+
+            <h1 class="title">Claude <span>Local Backup</span><br>Manager</h1>
+
+            <p class="description">
+                <strong>~/.claude</strong> directory auto-backup every 5 min.<br>Cross-platform daemon with
+                <strong>mirror sync + snapshots</strong>.
+            </p>
+
+            <div class="badges">
+                <div class="badge highlight">Cross-Platform</div>
+                <div class="badge highlight-blue">Auto Backup</div>
+                <div class="badge">rsync / robocopy / cp</div>
+                <div class="badge">Daemon Management</div>
+                <div class="badge highlight">Zero Dependencies</div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
