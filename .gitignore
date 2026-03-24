@@ -1,0 +1,28 @@
+# OS generated files
+.DS_Store
+Thumbs.db
+Desktop.ini
+._*
+
+# Editor / IDE
+.vscode/
+.idea/
+*.code-workspace
+*.swp
+*.swo
+*~
+
+# AI tools
+.claude/
+
+# Environment files (NEVER commit secrets)
+.env
+.env.local
+.env.*.local
+
+# Task management (local only)
+tasks/
+
+# Backup artifacts (local testing)
+*.pid
+*.log
