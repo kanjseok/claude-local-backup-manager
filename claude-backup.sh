@@ -3,7 +3,12 @@
 # Supports: Windows (Git Bash), WSL (Ubuntu), macOS, Linux
 # Usage: claude-backup.sh {start|stop|status|run-once|list}
 
+# Note: -e (errexit) is intentionally omitted. This script uses explicit error
+# checking throughout, and many code paths rely on non-zero exit codes from
+# robocopy (exit codes 0-7 = success), bash arithmetic ((var++)), and
+# intentional || true guards in the daemon loop.
 set -uo pipefail
+umask 077
 
 # ─── Defaults (override via environment variables) ────────────────────────────
 CLAUDE_BACKUP_SOURCE="${CLAUDE_BACKUP_SOURCE:-$HOME/.claude}"
@@ -11,6 +16,34 @@ CLAUDE_BACKUP_DIR="${CLAUDE_BACKUP_DIR:-$HOME/.claude-backups}"
 CLAUDE_BACKUP_INTERVAL="${CLAUDE_BACKUP_INTERVAL:-300}"
 CLAUDE_BACKUP_SNAPSHOT_INTERVAL="${CLAUDE_BACKUP_SNAPSHOT_INTERVAL:-3600}"
 CLAUDE_BACKUP_MAX_SNAPSHOTS="${CLAUDE_BACKUP_MAX_SNAPSHOTS:-48}"
+
+# ─── Input validation ────────────────────────────────────────────────────────
+validate_positive_int() {
+    local name="$1" value="$2"
+    if ! [[ "$value" =~ ^[0-9]+$ ]] || (( value <= 0 )); then
+        echo "ERROR: $name must be a positive integer, got: '$value'" >&2
+        exit 1
+    fi
+}
+
+validate_positive_int "CLAUDE_BACKUP_INTERVAL" "$CLAUDE_BACKUP_INTERVAL"
+validate_positive_int "CLAUDE_BACKUP_SNAPSHOT_INTERVAL" "$CLAUDE_BACKUP_SNAPSHOT_INTERVAL"
+validate_positive_int "CLAUDE_BACKUP_MAX_SNAPSHOTS" "$CLAUDE_BACKUP_MAX_SNAPSHOTS"
+
+validate_path() {
+    local name="$1" value="$2"
+    if [[ -z "$value" ]]; then
+        echo "ERROR: $name must not be empty" >&2
+        exit 1
+    fi
+    if [[ "$value" == *$'\n'* ]] || [[ "$value" == *$'\r'* ]]; then
+        echo "ERROR: $name contains invalid characters" >&2
+        exit 1
+    fi
+}
+
+validate_path "CLAUDE_BACKUP_SOURCE" "$CLAUDE_BACKUP_SOURCE"
+validate_path "CLAUDE_BACKUP_DIR" "$CLAUDE_BACKUP_DIR"
 
 # ─── Derived paths ────────────────────────────────────────────────────────────
 MIRROR_DIR="$CLAUDE_BACKUP_DIR/current"
@@ -277,10 +310,20 @@ sync_mirror() {
 }
 
 # ─── Snapshot functions ──────────────────────────────────────────────────────
+get_snapshot_files() {
+    local -n _result=$1
+    _result=()
+    shopt -s nullglob
+    _result=("$SNAPSHOT_DIR"/*.tar.gz)
+    shopt -u nullglob
+}
+
 get_latest_snapshot_time() {
-    local latest
-    latest=$(ls -1 "$SNAPSHOT_DIR"/*.tar.gz 2>/dev/null | sort | tail -n 1)
-    if [[ -n "$latest" ]]; then
+    local -a snaps
+    get_snapshot_files snaps
+    if (( ${#snaps[@]} > 0 )); then
+        # Filenames are YYYYMMDD_HHMMSS.tar.gz, so lexicographic sort = chronological
+        local latest="${snaps[-1]}"
         get_mtime "$latest"
     else
         echo "0"
@@ -299,7 +342,10 @@ maybe_create_snapshot() {
 }
 
 create_snapshot() {
-    if [[ ! -d "$MIRROR_DIR" ]] || [[ -z "$(ls -A "$MIRROR_DIR" 2>/dev/null)" ]]; then
+    shopt -s nullglob dotglob
+    local -a mirror_contents=("$MIRROR_DIR"/*)
+    shopt -u nullglob dotglob
+    if [[ ! -d "$MIRROR_DIR" ]] || (( ${#mirror_contents[@]} == 0 )); then
         log "WARN: Mirror directory empty, skipping snapshot"
         return 1
     fi
@@ -323,13 +369,15 @@ create_snapshot() {
 }
 
 cleanup_snapshots() {
-    local count
-    count=$(ls -1 "$SNAPSHOT_DIR"/*.tar.gz 2>/dev/null | wc -l)
+    local -a snaps
+    get_snapshot_files snaps
+    local count=${#snaps[@]}
     if (( count > CLAUDE_BACKUP_MAX_SNAPSHOTS )); then
         local to_delete=$((count - CLAUDE_BACKUP_MAX_SNAPSHOTS))
-        ls -1 "$SNAPSHOT_DIR"/*.tar.gz 2>/dev/null | sort | head -n "$to_delete" | while read -r f; do
-            rm -f "$f"
-            log "Deleted old snapshot: $(basename "$f")"
+        local i
+        for (( i = 0; i < to_delete; i++ )); do
+            rm -f "${snaps[$i]}"
+            log "Deleted old snapshot: $(basename "${snaps[$i]}")"
         done
     fi
 }
@@ -405,7 +453,7 @@ cmd_start() {
     fi
 
     # Launch daemon in background
-    nohup "$0" _daemon >> "$LOG_FILE" 2>&1 &
+    CLAUDE_BACKUP_DAEMON_INTERNAL=1 nohup "$0" _daemon >> "$LOG_FILE" 2>&1 &
     local daemon_pid=$!
     echo "$daemon_pid" > "$PID_FILE"
 
@@ -484,7 +532,9 @@ cmd_status() {
     # Snapshot count
     local snap_count=0
     if [[ -d "$SNAPSHOT_DIR" ]]; then
-        snap_count=$(ls -1 "$SNAPSHOT_DIR"/*.tar.gz 2>/dev/null | wc -l)
+        local -a snaps
+        get_snapshot_files snaps
+        snap_count=${#snaps[@]}
     fi
     echo "Snapshots: $snap_count"
 
@@ -532,8 +582,9 @@ cmd_list() {
         return 0
     fi
 
-    local count
-    count=$(ls -1 "$SNAPSHOT_DIR"/*.tar.gz 2>/dev/null | wc -l)
+    local -a snaps
+    get_snapshot_files snaps
+    local count=${#snaps[@]}
     if (( count == 0 )); then
         echo "No snapshots found."
         return 0
@@ -541,7 +592,8 @@ cmd_list() {
 
     echo "Available snapshots ($count):"
     echo "──────────────────────────────────────────"
-    ls -1 "$SNAPSHOT_DIR"/*.tar.gz 2>/dev/null | sort | while read -r f; do
+    local f
+    for f in "${snaps[@]}"; do
         local name size
         name=$(basename "$f")
         size=$(get_size "$f")
@@ -593,6 +645,11 @@ case "${1:-}" in
         cmd_list
         ;;
     _daemon)
+        # Internal: invoked by 'start' command via nohup. Not intended for direct use.
+        if [[ -z "${CLAUDE_BACKUP_DAEMON_INTERNAL:-}" ]]; then
+            echo "ERROR: _daemon is an internal command. Use 'start' instead." >&2
+            exit 1
+        fi
         daemon_loop
         ;;
     *)

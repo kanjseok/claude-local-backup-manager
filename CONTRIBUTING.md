@@ -64,6 +64,7 @@ git commit -m "docs(repo): add GitHub issue templates"
 - Use imperative mood in the subject (`add`, not `added` or `adds`)
 - Keep the subject line under 72 characters
 - Do **not** use `git add -A` or `git add .` — stage specific files only
+- **Never** force-add files under the `.claude/` directory (`git add -f .claude/...`). This directory contains local settings with user-specific paths and is excluded via `.gitignore` for security reasons
 
 ---
 

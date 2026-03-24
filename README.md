@@ -81,6 +81,11 @@ A cross-platform background script that automatically backs up the `~/.claude` d
 CLAUDE_BACKUP_INTERVAL=60 CLAUDE_BACKUP_DIR=/mnt/backup/.claude-backups ./claude-backup.sh start
 ```
 
+## Known Limitations
+
+- **Git Bash signal handling**: On some older Git Bash / MSYS2 versions, signal delivery (`SIGTERM`, `SIGHUP`) may be delayed or unreliable. The `stop` command includes a 5-second timeout with forced termination as a fallback.
+- **Backup storage encryption**: The backup directory is protected with `chmod 700` (owner-only access), but files are not encrypted at rest. For sensitive environments, use an encrypted filesystem for the backup destination.
+
 ## Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on how to get started.
