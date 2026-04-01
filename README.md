@@ -67,7 +67,7 @@ All contents of `~/.claude` are backed up **except** the following excluded patt
 | `worktrees` | Git worktree temporary copies |
 | `.update.lock` | Transient lock file |
 
-This means files like `config.json`, `settings.json`, `.credentials.json`, `MEMORY.md`, `projects/`, `plans/`, `todos/`, `skills/`, and all other non-excluded content are included automatically.
+Everything not matching an excluded pattern is backed up — including `config.json`, `settings.json`, `.credentials.json`, `MEMORY.md`, `projects/`, `plans/`, `todos/`, `skills/`, and any other file in `~/.claude`.
 
 ## Configuration (Environment Variables)
 

@@ -45,19 +45,21 @@ git push origin feature/your-topic
 
 ## 3. Commit Message Convention
 
-This repository follows **Conventional Commits** with the `docs` type as default.
+This repository follows **Conventional Commits**.
 
 ```
-docs(<scope>): <subject>
+<type>[(scope)]: <subject>
 ```
 
-**Scopes**: `tech-stack`, `boilerplate`, `readme`, `claude`, `repo`
+**Types**: `feat`, `fix`, `docs`, `chore`, `refactor`
+**Scope** (optional): `core`
 
 ```bash
 # Examples
-git commit -m "docs(boilerplate): add API design standard"
-git commit -m "docs(tech-stack): update Node.js version to 24"
-git commit -m "docs(repo): add GitHub issue templates"
+git commit -m "feat(core): add rsync exclude pattern for worktrees"
+git commit -m "fix(core): handle robocopy exit code on Windows"
+git commit -m "docs: clarify snapshot retention in README"
+git commit -m "chore: update .gitattributes line ending rules"
 ```
 
 **Rules**:
@@ -77,7 +79,7 @@ All documents in this repository must follow these standards:
 1. **One H1 (`#`) per file** — used as the document title
 2. **Blockquote summary** — a 1-2 line `>` summary immediately after the title
 3. **Body sections** — organized with H2 (`##`) and H3 (`###`)
-4. **Verification section** — a `## Verification` section at the end with commands or checklists to confirm setup
+4. **Verification section** (where applicable) — a `## Verification` section at the end with commands or checklists to confirm setup
 
 ### Content Principles
 
@@ -99,7 +101,7 @@ All documents in this repository must follow these standards:
 - Reference the related issue (e.g., `Closes #12`).
 - Keep PRs focused — one topic per PR.
 - Ensure all documents follow the writing conventions above.
-- Verify cross-reference consistency (e.g., if you add a new document, update `00-index.md` and `README.md`).
+- Verify cross-reference consistency (e.g., if you add a new document, update `README.md`).
 
 ---
 
@@ -108,10 +110,10 @@ All documents in this repository must follow these standards:
 Use the GitHub issue templates provided:
 
 - **Bug Report** — for broken links, incorrect information, formatting issues
-- **Document Request** — for proposing new standard documents or categories
+- **Feature Request** — for proposing new features or enhancements
 
 ---
 
 ## 7. License
 
-By contributing, you agree that your contributions will be licensed under the [CC BY 4.0](LICENSE) license.
+By contributing, you agree that your contributions will be licensed under the [MIT License](LICENSE).
