@@ -4,12 +4,13 @@
 * **Simplicity and Reliability**: The backup script must run silently in the background and reliably backup the `~/.claude` directory without heavy external dependencies like `cron`.
 * **Cross-Platform Compatibility**: The script must support Windows (Git Bash), WSL, macOS, and Linux seamlessly.
 * **Fail-Safe Operations**: Implement robust locking mechanisms (`mkdir`-based locking) and graceful shutdown sequences (`SIGTERM` -> wait 5 seconds -> `SIGKILL`).
-* **English Only**: All project output, documentation (except `@docs/plan` optionally), and commit messages must be written in English to be an open-source standard project.
+* **English Only**: All project output, documentation, and commit messages must be written in English to be an open-source standard project.
 
 ## Repository Structure
 * `claude-backup.sh`: Main executable bash script for managing the daemon and performing backups.
-* `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`: Primary open-source project documentation.
+* `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, `LICENSE`: Primary open-source project documentation.
 * `.github/`: Issue and Pull Request templates for the community.
+* `audits/`: Security and documentation audit reports.
 
 ## Git Rules
 * **Commit Types**: Use Conventional Commits (`feat`, `fix`, `docs`, `chore`, `refactor`).

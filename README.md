@@ -56,14 +56,18 @@ A cross-platform background script that automatically backs up the `~/.claude` d
 
 ## Backup Targets
 
-| Included | Excluded |
-|----------|----------|
-| `config.json`, `settings.json` | `.git` |
-| `.credentials.json` | `cache`, `debug` |
-| `MEMORY.md`, `history.jsonl` | `backups`, `shell-snapshots` |
-| `projects/`, `plans/`, `todos/` | `statsig`, `telemetry` |
-| `commands/`, `skills/`, `tasks/` | `worktrees` |
-| `file-history/`, `plugins/` (settings) | `.update.lock` |
+All contents of `~/.claude` are backed up **except** the following excluded patterns:
+
+| Excluded Pattern | Reason |
+|------------------|--------|
+| `.git` | Version control metadata |
+| `cache`, `debug` | Regenerable temporary data |
+| `backups`, `shell-snapshots` | Redundant backup data |
+| `statsig`, `telemetry` | Analytics / telemetry data |
+| `worktrees` | Git worktree temporary copies |
+| `.update.lock` | Transient lock file |
+
+This means files like `config.json`, `settings.json`, `.credentials.json`, `MEMORY.md`, `projects/`, `plans/`, `todos/`, `skills/`, and all other non-excluded content are included automatically.
 
 ## Configuration (Environment Variables)
 
@@ -92,4 +96,4 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the project's [LICENSE](LICENSE). Please review the license file for full details.
+This project is licensed under the [MIT License](LICENSE).
