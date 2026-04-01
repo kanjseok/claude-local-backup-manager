@@ -311,19 +311,16 @@ sync_mirror() {
 
 # ─── Snapshot functions ──────────────────────────────────────────────────────
 get_snapshot_files() {
-    local -n _result=$1
-    _result=()
     shopt -s nullglob
-    _result=("$SNAPSHOT_DIR"/*.tar.gz)
+    SNAPSHOT_FILES=("$SNAPSHOT_DIR"/*.tar.gz)
     shopt -u nullglob
 }
 
 get_latest_snapshot_time() {
-    local -a snaps
-    get_snapshot_files snaps
-    if (( ${#snaps[@]} > 0 )); then
+    get_snapshot_files
+    if (( ${#SNAPSHOT_FILES[@]} > 0 )); then
         # Filenames are YYYYMMDD_HHMMSS.tar.gz, so lexicographic sort = chronological
-        local latest="${snaps[-1]}"
+        local latest="${SNAPSHOT_FILES[-1]}"
         get_mtime "$latest"
     else
         echo "0"
@@ -369,15 +366,14 @@ create_snapshot() {
 }
 
 cleanup_snapshots() {
-    local -a snaps
-    get_snapshot_files snaps
-    local count=${#snaps[@]}
+    get_snapshot_files
+    local count=${#SNAPSHOT_FILES[@]}
     if (( count > CLAUDE_BACKUP_MAX_SNAPSHOTS )); then
         local to_delete=$((count - CLAUDE_BACKUP_MAX_SNAPSHOTS))
         local i
         for (( i = 0; i < to_delete; i++ )); do
-            rm -f "${snaps[$i]}"
-            log "Deleted old snapshot: $(basename "${snaps[$i]}")"
+            rm -f "${SNAPSHOT_FILES[$i]}"
+            log "Deleted old snapshot: $(basename "${SNAPSHOT_FILES[$i]}")"
         done
     fi
 }
@@ -532,9 +528,8 @@ cmd_status() {
     # Snapshot count
     local snap_count=0
     if [[ -d "$SNAPSHOT_DIR" ]]; then
-        local -a snaps
-        get_snapshot_files snaps
-        snap_count=${#snaps[@]}
+        get_snapshot_files
+        snap_count=${#SNAPSHOT_FILES[@]}
     fi
     echo "Snapshots: $snap_count"
 
@@ -582,9 +577,8 @@ cmd_list() {
         return 0
     fi
 
-    local -a snaps
-    get_snapshot_files snaps
-    local count=${#snaps[@]}
+    get_snapshot_files
+    local count=${#SNAPSHOT_FILES[@]}
     if (( count == 0 )); then
         echo "No snapshots found."
         return 0
@@ -593,7 +587,7 @@ cmd_list() {
     echo "Available snapshots ($count):"
     echo "──────────────────────────────────────────"
     local f
-    for f in "${snaps[@]}"; do
+    for f in "${SNAPSHOT_FILES[@]}"; do
         local name size
         name=$(basename "$f")
         size=$(get_size "$f")
